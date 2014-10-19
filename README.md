@@ -1,4 +1,4 @@
 pympdscrobble
 =============
 
-last.fm scrobbler for mpd written in mpd
+last.fm scrobbler for mpd written in python
