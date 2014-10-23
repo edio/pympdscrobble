@@ -3,6 +3,9 @@ import re
 
 
 #TODO consider support for external transformers (i.e. plugins)
+from scribscrob.model import Song
+
+
 class SongTransformer:
     """
     Transforms song (i.e. guesses tags). Intended for extension
@@ -25,7 +28,7 @@ class TagGuesser(SongTransformer):
     def __init__(self, regexes: list):
         self.patterns = list(map(lambda r: re.compile(r), regexes))
 
-    def transform(self, song):
+    def transform(self, song: Song):
         if song.title and song.artist:
             # nothing to do
             return song

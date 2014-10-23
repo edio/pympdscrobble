@@ -1,7 +1,7 @@
 import logging
 from select import select
 from mpd import MPDClient
-from pympdscrobbler.model import Status, Song
+from scribscrob.model import Status, Song
 
 
 logger = logging.getLogger('mpd')
