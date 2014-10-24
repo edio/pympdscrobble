@@ -23,7 +23,7 @@ class Song:
         if not self.isstream:
             self.length = int(song['time']) * 1000
 
-    def __str__(self):
+    def __repr__(self):
         nstr = lambda s: s if s else "<empty>"
         source = "[http]" if self.isstream else "[file]"
         return "{:s} {:s} - {:s}".format(source, nstr(self.artist), nstr(self.title))
