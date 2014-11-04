@@ -1,7 +1,7 @@
 import logging
 import time
 from scribscrob.model import Status, STOP, Song, PLAY, PAUSE
-from scribscrob.scrobble import Scrobbler
+from scribscrob.scrobble import LastfmScrobbler
 from scribscrob.transform import SongTransformer
 
 
@@ -18,8 +18,6 @@ class ScrobblingMachine:
     Holds scrobbling state. Decides, whether playing notification should be sent and scrobbling should be commited
     """
 
-    logger = logging.getLogger("scrobbler")
-
     state = None
     song = None
     elapsed = 0
@@ -27,13 +25,13 @@ class ScrobblingMachine:
 
     def __init__(self, initialstatus: Status=Status({'state': STOP}), initialsong: Song=None,
                  transformer: SongTransformer=SongTransformer(),
-                 scrobbler: Scrobbler=None):
+                 scrobbler: LastfmScrobbler=None):
         self.transformer = transformer
         self.scrobbler = scrobbler
         self.onevent(initialstatus, initialsong)
 
     def onevent(self, status: Status, song: Song):
-        logger.debug("Handling event {}, song: {}", status, song)
+        logger.debug("Handling event %s song: %s", status, song)
         state = status.state
 
         if state == STOP:
@@ -69,7 +67,7 @@ class ScrobblingMachine:
     def play(self, song):
         """
         Handle play from beginning
-            param song - played song
+            param: song - played song
         """
         # if we had been playing something
         if self.state and self.state.isplay():
@@ -118,13 +116,13 @@ class ScrobblingMachine:
 
     def scrobble_if_needed(self):
         song = self.song
-        self.logger.debug("Asked to scrobble {}", song)
+        logger.debug("Asked to scrobble %s", song)
         if song and eligibleforscrobbling(song) and (self.elapsed > scrobblethreshold(song)):
-            self.scrobbler.scrobble(song, self.start / 1000)
+            self.scrobbler.scrobble(song, int(self.start / 1000))
 
     def nowplaying_if_needed(self):
         song = self.song
-        self.logger.debug("Asked to nowplaying {}", song)
+        logger.debug("Asked to nowplaying %s", song)
         if song and eligibleforscrobbling(song):
             self.scrobbler.nowplaying(song)
 

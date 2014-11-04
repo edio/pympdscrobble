@@ -6,8 +6,8 @@ import pylast
 from scribscrob.model import Song
 
 
-API_KEY = "apikey"
-API_SECRET = "secres"
+API_KEY = "key"
+API_SECRET = "secret"
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ class LastfmScrobbler:
         self.username = username
         self.password_hash = password_hash if password_hash else pylast.md5(password)
         self.cachefile = cachefile
+        self.network = None
 
     def ensurestarted(self):
         if not self.network:
@@ -37,7 +38,7 @@ class LastfmScrobbler:
         """
         try:
             self._scrobble(song, timestamp)
-            self.flush()
+            self.flush_cache()
         except (pylast.WSError, pylast.NetworkError, pylast.MalformedResponseError) as e:
             logger.error("Can't scrobble. Saving to local cache", e)
             self.scrobble_to_file(song, timestamp)
@@ -48,11 +49,13 @@ class LastfmScrobbler:
         """
         self.ensurestarted()
         self.network.scrobble(song.artist, song.title, timestamp)
+        logger.debug("Scrobbled %s", song)
 
     def nowplaying(self, song):
         try:
             self.ensurestarted()
             self.network.update_now_playing(song.artist, song.title)
+            logger.debug("Sent now playing %s", song)
         except (pylast.WSError, pylast.NetworkError, pylast.MalformedResponseError) as e:
             logger.error("Can't send now playing notification", e)
 
@@ -66,14 +69,15 @@ class LastfmScrobbler:
             f.write('\n')
 
     def flush_cache(self):
-        with open(self.cachefile, mode='r') as cachefile_handle:
-            scrobbled = self.scrobble_cache_file(cachefile_handle)
-            if scrobbled:
-                with open(self.get_tmp_cache(), mode="w") as tmp_cache_file_handle:
-                    for line in cachefile_handle:
-                        tmp_cache_file_handle.write(line)
+        if self.cachefile:
+            with open(self.cachefile, mode='r') as cachefile_handle:
+                scrobbled = self.scrobble_cache_file(cachefile_handle)
+                if scrobbled:
+                    with open(self.get_tmp_cache(), mode="w") as tmp_cache_file_handle:
+                        for line in cachefile_handle:
+                            tmp_cache_file_handle.write(line)
 
-        os.rename(self.get_tmp_cache(), self.cachefile)
+            os.rename(self.get_tmp_cache(), self.cachefile)
 
     def get_tmp_cache(self):
         return self.cachefile + TMP_FILE_SUFFIX

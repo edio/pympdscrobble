@@ -25,7 +25,7 @@ class MpdListener:
         Just performs a connection attempt with host, port and password passed to constructor
         """
         self.client.connect(self.host, self.port)
-        logger.info("Connected to {}:{}", self.host, self.port)
+        logger.info("Connected to %s:%d", self.host, self.port)
 
     def listen(self, event, onevent):
         """
@@ -42,5 +42,5 @@ class MpdListener:
     def status(self):
         status = self.client.status()
         song = self.client.currentsong()
-        logger.debug("Current status {} {}", status['state'], song)
+        logger.debug("Current status %s %s", status['state'], song)
         return Status(status), Song(song) if song else None
